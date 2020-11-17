@@ -1,4 +1,4 @@
-package com.tts.usersapi.controller;
+package com.tts.usersapi.controllers;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,26 +18,50 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.ApiResponse;
+
 @RestController
-public class UserController {
+@RequestMapping("/v2")
+@Api(value = "userinfo", description = "Operations pertaining to user information")
+public class UserControllerV2 {
     
+
     @Autowired
     UserRepository userRepository;
     
+
+
+    @ApiOperation(value = "Get all user info", response = User.class, responseContainer = "List")
+    @ApiResponses(value = {
+        @ApiResponse(code = 401, message = "BAD REQUEST"),
+        @ApiResponse(code = 200, message = "OK"),
+    })
     @GetMapping("/users")
-    public List<User> getUsers(@RequestParam(value="state", required = false) String state) {
+    public ResponseEntity<List<User>> getUsers(@RequestParam(value="state", required = true) String state) {
         
         if(state != null) {
-            return userRepository.findByState(state);
-        } else {
-            return (List<User>) userRepository.findAll();
+            return new ResponseEntity<List<User>>(HttpStatus.BAD_REQUEST);
         }
+
+        return new ResponseEntity<List<User>>(HttpStatus.OK);
         
     }
 
+
+
+    @ApiOperation(value = "Get all user info", response = User.class, responseContainer = "List")
+    @ApiResponses(value = {
+        @ApiResponse(code = 404, message = "NOT FOUND"),
+        @ApiResponse(code = 200, message = "OK")
+        
+    })
     @GetMapping("/users/{id}")
     public ResponseEntity<Optional<User>> getUser(@PathVariable(value="id") Long id) {
         
@@ -63,6 +87,14 @@ public class UserController {
 
     }
 
+
+
+    @ApiOperation(value = "Create user")
+    @ApiResponses(value = {
+        @ApiResponse(code = 400, message = "BAD REQUEST"),
+        @ApiResponse(code = 201, message = "CREATED")
+        
+    })
     @PostMapping("/users")                                                  //BindingResult is class that accepts the error
     public ResponseEntity<Void> createUser(@RequestBody @Valid User user, BindingResult bindingResult) {
         System.out.println("Binding Result -- : " + bindingResult);
@@ -75,6 +107,17 @@ public class UserController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
+
+
+
+
+    @ApiOperation(value = "Get all user info", response = User.class, responseContainer = "List")
+    @ApiResponses(value = {
+        @ApiResponse(code = 404, message = "NOT FOUND"),
+        @ApiResponse(code = 400, message = "BAD REQUEST"),
+        @ApiResponse(code = 200, message = "OK")
+        
+    })
     @PutMapping("/users/{id}")
     public ResponseEntity<Void> editUser(@PathVariable(value="id") Long id, @RequestBody @Valid User user, BindingResult bindingResult) {
         
@@ -90,12 +133,30 @@ public class UserController {
 
         userRepository.save(user);
 
-        return new ResponseEntity<>(HttpStatus.CREATED);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
+
+
+
+    @ApiOperation(value = "Get all user info", response = User.class, responseContainer = "List")
+    @ApiResponses(value = {
+        @ApiResponse(code = 404, message = "NOT FOUND"),
+        @ApiResponse(code = 200, message = "OK")
+        
+    })
     @DeleteMapping("/users/{id}")
-    public void deleteUser(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        
+        Optional<User> requestedUser = userRepository.findById(id);
+
+        if(!requestedUser.isPresent()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
         userRepository.deleteById(id);
+
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
 
