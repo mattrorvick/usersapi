@@ -4,7 +4,10 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.validation.constraints.NotEmpty;
+
+import org.hibernate.validator.constraints.Length;
+
+import io.swagger.annotations.ApiModelProperty;
 
 
 @Entity //for use with database
@@ -12,15 +15,19 @@ public class User {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @ApiModelProperty(notes = "The id of the user")
     private Long id;
 
-    @NotEmpty
+    @Length(max = 20)
+    @ApiModelProperty(notes = "The first name of the user")
     private String firstName;
 
-    @NotEmpty
+    @Length(min = 2)
+    @ApiModelProperty(notes = "The last name of the user")
     private String lastName;
 
-    @NotEmpty
+    @Length(max = 20, min = 2)
+    @ApiModelProperty(notes = "The state in which the user lives")
     private String state;
 
     public User() {
